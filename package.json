@@ -1,0 +1,76 @@
+{
+  "name": "feature-spec-extension",
+  "displayName": "Feature Spec Manager",
+  "description": "AI-powered feature specification management for VS Code",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onView:featureSpecs"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "featureSpecs",
+          "name": "Feature Specs",
+          "when": "workspaceHasFeatures || true"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "featureSpecs.createNew",
+        "title": "Create New Feature",
+        "icon": "$(add)"
+      },
+      {
+        "command": "featureSpecs.refreshTree",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "featureSpecs.createNew",
+          "when": "view == featureSpecs",
+          "group": "navigation"
+        },
+        {
+          "command": "featureSpecs.refreshTree",
+          "when": "view == featureSpecs",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/predator4hack/codespec.git"
+  },
+  "keywords": ["vscode", "extension", "feature-spec", "ai", "claude", "gemini"],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/predator4hack/codespec/issues"
+  },
+  "homepage": "https://github.com/predator4hack/codespec#readme",
+  "devDependencies": {
+    "@types/node": "^16.18.126",
+    "@types/vscode": "^1.104.0",
+    "ts-loader": "^9.5.4",
+    "typescript": "^4.9.5",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^5.1.4"
+  }
+}

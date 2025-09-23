@@ -9,7 +9,9 @@ code .
 ```
 
 ### 2. Launch the Extension
-- **Press F5** (or open Run and Debug panel with Ctrl+Shift+D and click "Run Extension")
+- **Press F5** (or open Run and Debug panel and click "Run Extension")
+  - **Windows/Linux**: Ctrl+Shift+D to open Run and Debug panel
+  - **Mac**: Cmd+Shift+D to open Run and Debug panel
 - This opens a new "Extension Development Host" window
 - Wait for the new window to fully load
 
@@ -22,7 +24,9 @@ code .
    - 📊 User Dashboard  
    - 🔔 Notification System
 
-3. **Console Output**: Open Debug Console (Ctrl+Shift+Y) to see logs:
+3. **Console Output**: Open Debug Console to see logs:
+   - **Windows/Linux**: Ctrl+Shift+Y
+   - **Mac**: Cmd+Shift+Y
    ```
    🚀 Feature Spec Extension is now active!
    📝 Creating FeatureTreeProvider...
@@ -72,7 +76,9 @@ When you test, this is what happens:
 3. **`src/providers/featureTreeProvider.ts`** - More complex tree logic
 
 #### Use VS Code Features:
-- **Go to Definition**: Ctrl+Click on any function/class name
+- **Go to Definition**: 
+  - **Windows/Linux**: Ctrl+Click on any function/class name
+  - **Mac**: Cmd+Click on any function/class name
 - **Find All References**: Right-click → "Find All References"
 - **Outline View**: See file structure in Explorer
 - **Breadcrumbs**: Navigate easily at the top of editor
@@ -86,11 +92,15 @@ When you test, this is what happens:
 
 #### Tree Not Showing:
 - Look for "Feature Specs" in Explorer sidebar
-- Try refreshing the Extension Development Host (Ctrl+R)
+- Try refreshing the Extension Development Host:
+  - **Windows/Linux**: Ctrl+R
+  - **Mac**: Cmd+R
 - Check if there are any TypeScript errors
 
 #### No Console Logs:
-- Make sure Debug Console is open (Ctrl+Shift+Y)
+- Make sure Debug Console is open:
+  - **Windows/Linux**: Ctrl+Shift+Y
+  - **Mac**: Cmd+Shift+Y
 - Click "Extension Host" dropdown if multiple consoles available
 
 ### 8. Next Steps for Learning
@@ -113,7 +123,9 @@ npm run compile
 
 After making changes:
 - Save your TypeScript files
-- Press **Ctrl+R** in Extension Development Host to reload
+- Reload the Extension Development Host:
+  - **Windows/Linux**: Ctrl+R
+  - **Mac**: Cmd+R
 - Your changes will be reflected immediately!
 
 ---

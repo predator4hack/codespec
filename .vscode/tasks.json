@@ -4,6 +4,7 @@
     {
       "type": "npm",
       "script": "watch",
+      "label": "npm: watch",
       "problemMatcher": "$tsc-watch",
       "isBackground": true,
       "presentation": {
@@ -17,6 +18,7 @@
     {
       "type": "npm",
       "script": "compile",
+      "label": "npm: compile", 
       "problemMatcher": "$tsc",
       "group": "build"
     }

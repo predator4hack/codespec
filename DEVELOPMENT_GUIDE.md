@@ -9,7 +9,7 @@
    code /Users/chandankumar/myspace/codespec
    ```
 
-2. **Press F5** or go to `Run and Debug` panel (Ctrl+Shift+D) and click "Run Extension"
+2. **Press F5** or go to `Run and Debug` panel (Ctrl+Shift+D on Windows/Linux, Cmd+Shift+D on Mac) and click "Run Extension"
    - This launches a new VS Code window called "Extension Development Host"
    - Your extension will be loaded in this new window
 
@@ -88,7 +88,9 @@ src/
 
 ### Setting Up Debugging
 
-1. **Open Debug Panel**: Ctrl+Shift+D (Cmd+Shift+D on Mac)
+1. **Open Debug Panel**: 
+   - **Windows/Linux**: Ctrl+Shift+D
+   - **Mac**: Cmd+Shift+D
 2. **Set Breakpoints**: Click in the gutter next to line numbers
 3. **Launch Debugger**: Press F5 or click "Run Extension"
 
@@ -135,14 +137,18 @@ async function createNewFeature() {
 2. **Start watch mode**: `npm run watch` (keeps rebuilding on changes)
 3. **Press F5** to launch Extension Development Host
 4. **Make changes** to TypeScript files
-5. **Reload Extension**: Ctrl+R in Extension Development Host window
+5. **Reload Extension**: 
+   - **Windows/Linux**: Ctrl+R in Extension Development Host window
+   - **Mac**: Cmd+R in Extension Development Host window
 6. **Test changes** immediately
 
 ### Making Changes
 
 1. **Edit TypeScript files** in `src/` directory
 2. **Save files** - Webpack automatically recompiles (if watch mode is running)
-3. **Reload extension** in Extension Development Host (Ctrl+R)
+3. **Reload extension** in Extension Development Host:
+   - **Windows/Linux**: Ctrl+R
+   - **Mac**: Cmd+R
 4. **Test your changes**
 
 ### Common Development Commands

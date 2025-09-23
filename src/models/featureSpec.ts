@@ -19,16 +19,31 @@ export class FeatureSpecItem extends vscode.TreeItem {
 }
 
 export interface FeatureSpecData {
-    id: string;
+    featureName: string;
+    createdDate: string;
+    lastUpdated: string;
+    status: 'Draft' | 'In Progress' | 'Ready for Review' | 'Completed';
+    cliAgent: 'claude-code' | 'gemini-cli' | 'Not Set';
+    description?: string;
+    acceptanceCriteria?: string[];
+    importantFiles?: string[];
+    additionalContext?: string;
+    technicalConsiderations?: string;
+}
+
+export interface FeatureSpecFile {
     name: string;
-    description: string;
-    status: 'draft' | 'in-progress' | 'planning' | 'completed';
-    filePath?: string;
-    createdAt: Date;
-    updatedAt: Date;
-    cliAgent?: string;
-    questionsGenerated?: boolean;
-    planGenerated?: boolean;
+    path: string;
+    type: 'feature' | 'directory';
+    children?: FeatureSpecFile[];
+}
+
+export interface FeatureSpecMetadata {
+    created: string;
+    lastUpdated: string;
+    cliAgentUsed: string;
+    questionsGenerated?: string;
+    planGenerated?: string;
 }
 
 export interface ProjectContext {

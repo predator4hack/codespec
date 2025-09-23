@@ -1,20 +1,24 @@
 import * as vscode from 'vscode';
-import { FeatureSpecItem } from '../models/featureSpec';
+import * as path from 'path';
+import { FeatureSpecItem, FeatureSpecFile } from '../models/featureSpec';
+import { FileService } from '../services/fileService';
 
 export class FeatureTreeProvider implements vscode.TreeDataProvider<FeatureSpecItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<FeatureSpecItem | undefined | null | void> = new vscode.EventEmitter<FeatureSpecItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<FeatureSpecItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
     private data: FeatureSpecItem[] = [];
+    private fileWatcher: vscode.FileSystemWatcher | undefined;
 
-    constructor() {
+    constructor(private fileService: FileService) {
         console.log('🌳 FeatureTreeProvider constructor called');
-        this.loadDummyData();
+        this.loadFeatureFiles();
+        this.watchFiles();
     }
 
     refresh(): void {
         console.log('🔄 Refreshing tree view...');
-        this.loadDummyData();
+        this.loadFeatureFiles();
         this._onDidChangeTreeData.fire();
     }
 
@@ -56,63 +60,97 @@ export class FeatureTreeProvider implements vscode.TreeDataProvider<FeatureSpecI
         return Promise.resolve(element.parent || null);
     }
 
-    private loadDummyData(): void {
-        // Create dummy feature specs for initial testing
-        const userAuthFeature = new FeatureSpecItem(
-            'user-authentication',
-            'User Authentication System',
-            vscode.TreeItemCollapsibleState.Expanded,
-            'featureSpec'
-        );
-        userAuthFeature.description = 'Draft';
-        userAuthFeature.tooltip = 'User Authentication System - Status: Draft';
-        userAuthFeature.iconPath = new vscode.ThemeIcon('account');
-        
-        // Add sub-items to demonstrate tree structure
-        const loginComponent = new FeatureSpecItem(
-            'login-component',
-            'Login Component',
+    private async loadFeatureFiles(): Promise<void> {
+        try {
+            const files = await this.fileService.listFeatureFiles();
+            this.data = this.buildTreeStructure(files);
+            console.log(`📋 Loaded ${this.data.length} feature files`);
+        } catch (error) {
+            console.error('Failed to load feature files:', error);
+            // Show empty state with helpful message
+            this.data = [this.createEmptyStateItem()];
+        }
+    }
+
+    private buildTreeStructure(files: string[]): FeatureSpecItem[] {
+        const items: FeatureSpecItem[] = [];
+
+        for (const filePath of files) {
+            const fileName = path.basename(filePath, '.md');
+            const displayName = this.formatDisplayName(fileName);
+            
+            const item = new FeatureSpecItem(
+                fileName,
+                displayName,
+                vscode.TreeItemCollapsibleState.None,
+                'featureSpec',
+                vscode.Uri.file(filePath)
+            );
+
+            item.description = 'Feature Spec';
+            item.tooltip = `${displayName} - Click to open`;
+            item.iconPath = new vscode.ThemeIcon('file-text');
+            
+            items.push(item);
+        }
+
+        return items.sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    private formatDisplayName(fileName: string): string {
+        return fileName
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+
+    private createEmptyStateItem(): FeatureSpecItem {
+        const item = new FeatureSpecItem(
+            'empty-state',
+            'No feature specifications found',
             vscode.TreeItemCollapsibleState.None,
-            'featureComponent'
+            'emptyState'
         );
-        loginComponent.description = 'Component';
-        loginComponent.iconPath = new vscode.ThemeIcon('symbol-class');
-        loginComponent.parent = userAuthFeature;
+        item.description = 'Create your first feature spec';
+        item.tooltip = 'Click "Create New Feature" to get started';
+        item.iconPath = new vscode.ThemeIcon('info');
+        return item;
+    }
 
-        const authService = new FeatureSpecItem(
-            'auth-service',
-            'Authentication Service',
-            vscode.TreeItemCollapsibleState.None,
-            'featureComponent'
-        );
-        authService.description = 'Service';
-        authService.iconPath = new vscode.ThemeIcon('symbol-interface');
-        authService.parent = userAuthFeature;
+    private watchFiles(): void {
+        try {
+            const workspaceFolders = vscode.workspace.workspaceFolders;
+            if (!workspaceFolders || workspaceFolders.length === 0) {
+                return;
+            }
 
-        userAuthFeature.children = [loginComponent, authService];
+            const workspaceRoot = workspaceFolders[0].uri.fsPath;
+            const pattern = path.join(workspaceRoot, '.features', '*.md');
+            
+            this.fileWatcher = vscode.workspace.createFileSystemWatcher(pattern);
+            
+            this.fileWatcher.onDidCreate(() => {
+                console.log('📁 Feature file created, refreshing tree...');
+                this.refresh();
+            });
+            
+            this.fileWatcher.onDidDelete(() => {
+                console.log('🗑️ Feature file deleted, refreshing tree...');
+                this.refresh();
+            });
+            
+            this.fileWatcher.onDidChange(() => {
+                console.log('✏️ Feature file changed, refreshing tree...');
+                this.refresh();
+            });
+        } catch (error) {
+            console.error('Failed to set up file watcher:', error);
+        }
+    }
 
-        // Second dummy feature
-        const dashboardFeature = new FeatureSpecItem(
-            'dashboard',
-            'User Dashboard',
-            vscode.TreeItemCollapsibleState.Collapsed,
-            'featureSpec'
-        );
-        dashboardFeature.description = 'In Progress';
-        dashboardFeature.tooltip = 'User Dashboard - Status: In Progress';
-        dashboardFeature.iconPath = new vscode.ThemeIcon('dashboard');
-
-        // Third dummy feature
-        const notificationFeature = new FeatureSpecItem(
-            'notifications',
-            'Notification System',
-            vscode.TreeItemCollapsibleState.None,
-            'featureSpec'
-        );
-        notificationFeature.description = 'Planning';
-        notificationFeature.tooltip = 'Notification System - Status: Planning';
-        notificationFeature.iconPath = new vscode.ThemeIcon('bell');
-
-        this.data = [userAuthFeature, dashboardFeature, notificationFeature];
+    dispose(): void {
+        if (this.fileWatcher) {
+            this.fileWatcher.dispose();
+        }
     }
 }

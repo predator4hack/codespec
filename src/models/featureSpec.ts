@@ -53,4 +53,35 @@ export interface ProjectContext {
     importantFiles: string[];
     dependencies: string[];
     projectStructure: string[];
+    cliContext?: CLIProjectContext;
+}
+
+export interface CLIProjectContext {
+    projectType: 'typescript' | 'javascript' | 'python' | 'java' | 'other';
+    framework?: string;              // React, Vue, Angular, etc.
+    packageManager?: string;         // npm, yarn, pnpm
+    buildTools: string[];           // webpack, vite, rollup
+    testFramework?: string;         // jest, mocha, pytest
+    dependencies: PackageInfo[];    // Key dependencies
+    projectStructure: FileStructure[];
+    configFiles: ConfigFile[];
+}
+
+export interface PackageInfo {
+    name: string;
+    version: string;
+    isDevDependency: boolean;
+}
+
+export interface FileStructure {
+    path: string;
+    type: 'file' | 'directory';
+    size?: number;
+    lastModified?: Date;
+}
+
+export interface ConfigFile {
+    name: string;
+    path: string;
+    content: string;
 }

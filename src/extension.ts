@@ -3,10 +3,14 @@ import { FeatureTreeProvider } from './providers/featureTreeProvider';
 import { TemplateService } from './services/templateService';
 import { FileService } from './services/fileService';
 import { FeatureSpecData } from './models/featureSpec';
+import { AgentManager } from './services/agentManager';
+import { CLICommands } from './commands/cliCommands';
 
 let treeProvider: FeatureTreeProvider;
 let templateService: TemplateService;
 let fileService: FileService;
+let agentManager: AgentManager;
+let cliCommands: CLICommands;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('🚀 Feature Spec Extension is now active!');
@@ -15,6 +19,8 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('🔧 Initializing services...');
     templateService = new TemplateService(context);
     fileService = new FileService();
+    agentManager = AgentManager.getInstance();
+    cliCommands = new CLICommands();
     treeProvider = new FeatureTreeProvider(fileService);
     
     // Register tree view
@@ -22,6 +28,12 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.createTreeView('featureSpecs', {
         treeDataProvider: treeProvider,
         canSelectMany: false,
+    });
+
+    // Initialize CLI agents
+    console.log('🤖 Initializing CLI agents...');
+    agentManager.initializeAgents().catch(error => {
+        console.error('Failed to initialize CLI agents:', error);
     });
 
     // Register commands
@@ -32,7 +44,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         templateService,
         fileService,
-        treeProvider
+        treeProvider,
+        cliCommands
     );
     
     console.log('✅ Extension activation complete!');
@@ -40,6 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 function registerCommands(context: vscode.ExtensionContext) {
     const commands = [
+        // Existing commands
         vscode.commands.registerCommand(
             'featureSpecs.createNew',
             createNewFeature
@@ -47,6 +61,46 @@ function registerCommands(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand(
             'featureSpecs.refreshTree',
             () => treeProvider.refresh()
+        ),
+        
+        // CLI Agent commands
+        vscode.commands.registerCommand(
+            'codespec.generateQuestions',
+            (featureUri?: vscode.Uri) => cliCommands.generateQuestions(featureUri)
+        ),
+        vscode.commands.registerCommand(
+            'codespec.generatePlan',
+            (featureUri?: vscode.Uri) => cliCommands.generatePlan(featureUri)
+        ),
+        vscode.commands.registerCommand(
+            'codespec.switchAgent',
+            () => cliCommands.switchAgent()
+        ),
+        vscode.commands.registerCommand(
+            'codespec.refreshAgents',
+            () => cliCommands.refreshAgents()
+        ),
+        vscode.commands.registerCommand(
+            'codespec.showAgentStatus',
+            () => cliCommands.showAgentStatus()
+        ),
+        vscode.commands.registerCommand(
+            'codespec.runInTerminal',
+            (featureUri?: vscode.Uri) => cliCommands.runInTerminal(featureUri)
+        ),
+        
+        // Agent status context menu commands
+        vscode.commands.registerCommand(
+            'codespec.selectAgent',
+            () => cliCommands.switchAgent()
+        ),
+        vscode.commands.registerCommand(
+            'codespec.installAgents',
+            () => agentManager.showInstallationGuide()
+        ),
+        vscode.commands.registerCommand(
+            'codespec.testAgent',
+            () => cliCommands.showAgentStatus()
         ),
     ];
 

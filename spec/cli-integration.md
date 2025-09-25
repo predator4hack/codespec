@@ -117,30 +117,32 @@ _Answer:_ yes, create prompts.ts
 ## Detailed Implementation Plan
 
 ### Overview
+
 This implementation plan provides step-by-step guidance for implementing CLI integration with Claude Code and Gemini CLI agents. The plan is structured to enable seamless agent detection, command building, and execution within the VS Code extension.
 
 ### Phase 1: Core Models and Interfaces
 
 #### 1.1 CLI Agent Model (`src/models/cliAgent.ts`)
+
 **Estimated Time:** 1-2 hours
 
 ```typescript
 export interface CLIAgentInfo {
-    name: string;                    // 'claude-code' | 'gemini-cli'
-    displayName: string;             // 'Claude Code' | 'Gemini CLI'
-    command: string;                 // Base command ('claude', 'gcloud')
-    version: string;                 // Detected version
-    isAvailable: boolean;            // Installation status
-    isAuthenticated: boolean;        // Authentication status
+    name: string; // 'claude-code' | 'gemini-cli'
+    displayName: string; // 'Claude Code' | 'Gemini CLI'
+    command: string; // Base command ('claude', 'gcloud')
+    version: string; // Detected version
+    isAvailable: boolean; // Installation status
+    isAuthenticated: boolean; // Authentication status
     supportedFeatures: CLIFeature[]; // Supported capabilities
-    executablePath?: string;         // Optional path to executable
+    executablePath?: string; // Optional path to executable
 }
 
 export enum CLIFeature {
-    QUESTIONNAIRE_GENERATION = 'questionnaire',
-    IMPLEMENTATION_PLANNING = 'planning',
-    CODE_GENERATION = 'codegen',
-    FILE_ANALYSIS = 'analysis'
+    QUESTIONNAIRE_GENERATION = "questionnaire",
+    IMPLEMENTATION_PLANNING = "planning",
+    CODE_GENERATION = "codegen",
+    FILE_ANALYSIS = "analysis",
 }
 
 export interface CLIExecutionResult {
@@ -152,12 +154,14 @@ export interface CLIExecutionResult {
 ```
 
 **Implementation Steps:**
+
 1. Create the interface file with TypeScript definitions
 2. Define comprehensive CLI agent properties
 3. Include feature enumeration for capability tracking
 4. Add execution result interface for command responses
 
 #### 1.2 Project Context Model Enhancement (`src/models/projectContext.ts`)
+
 **Estimated Time:** 2-3 hours
 
 ```typescript
@@ -167,12 +171,12 @@ export interface ProjectContext {
 }
 
 export interface CLIProjectContext {
-    projectType: 'typescript' | 'javascript' | 'python' | 'java' | 'other';
-    framework?: string;              // React, Vue, Angular, etc.
-    packageManager?: string;         // npm, yarn, pnpm
-    buildTools: string[];           // webpack, vite, rollup
-    testFramework?: string;         // jest, mocha, pytest
-    dependencies: PackageInfo[];    // Key dependencies
+    projectType: "typescript" | "javascript" | "python" | "java" | "other";
+    framework?: string; // React, Vue, Angular, etc.
+    packageManager?: string; // npm, yarn, pnpm
+    buildTools: string[]; // webpack, vite, rollup
+    testFramework?: string; // jest, mocha, pytest
+    dependencies: PackageInfo[]; // Key dependencies
     projectStructure: FileStructure[];
     configFiles: ConfigFile[];
 }
@@ -185,7 +189,7 @@ export interface PackageInfo {
 
 export interface FileStructure {
     path: string;
-    type: 'file' | 'directory';
+    type: "file" | "directory";
     size?: number;
     lastModified?: Date;
 }
@@ -200,14 +204,16 @@ export interface ConfigFile {
 ### Phase 2: Detection and Management Services
 
 #### 2.1 CLI Detector Implementation (`src/utils/cliDetector.ts`)
+
 **Estimated Time:** 4-5 hours
 
 **Core Detection Logic:**
+
 ```typescript
 export class CLIDetector {
-    private static readonly CLAUDE_COMMANDS = ['claude', 'claude-code'];
-    private static readonly GEMINI_COMMANDS = ['gcloud'];
-    
+    private static readonly CLAUDE_COMMANDS = ["claude", "claude-code"];
+    private static readonly GEMINI_COMMANDS = ["gcloud"];
+
     async detectClaudeCode(): Promise<CLIAgentInfo> {
         // Implementation strategy:
         // 1. Try 'claude --version' command
@@ -215,7 +221,7 @@ export class CLIDetector {
         // 3. Verify authentication status with 'claude auth status'
         // 4. Return CLIAgentInfo with detected capabilities
     }
-    
+
     async detectGeminiCLI(): Promise<CLIAgentInfo> {
         // Implementation strategy:
         // 1. Try 'gcloud --version' command
@@ -227,6 +233,7 @@ export class CLIDetector {
 ```
 
 **Implementation Steps:**
+
 1. Create command execution utility using VS Code's terminal API
 2. Implement version detection for each CLI tool
 3. Add authentication status checking
@@ -235,15 +242,18 @@ export class CLIDetector {
 6. Implement error handling for permission issues
 
 #### 2.2 Agent Manager Service (`src/services/agentManager.ts`)
+
 **Estimated Time:** 3-4 hours
 
 **Key Responsibilities:**
-- Maintain registry of available CLI agents
-- Handle agent selection and switching
-- Persist agent preferences in memory
-- Provide agent capability querying
+
+-   Maintain registry of available CLI agents
+-   Handle agent selection and switching
+-   Persist agent preferences in memory
+-   Provide agent capability querying
 
 **Implementation Steps:**
+
 1. Create singleton pattern for agent management
 2. Implement initialization routine that runs on extension activation
 3. Add agent switching functionality with validation
@@ -252,9 +262,11 @@ export class CLIDetector {
 6. Implement refresh mechanism for agent status updates
 
 #### 2.3 Project Analyzer Service (`src/services/projectAnalyzer.ts`)
+
 **Estimated Time:** 5-6 hours
 
 **Analysis Capabilities:**
+
 ```typescript
 export class ProjectAnalyzer {
     async analyzeProject(workspacePath: string): Promise<CLIProjectContext> {
@@ -265,7 +277,7 @@ export class ProjectAnalyzer {
         // 5. Map project structure for context
         // 6. Cache results for performance
     }
-    
+
     async getProjectSummary(context: CLIProjectContext): Promise<string> {
         // Generate human-readable project summary for CLI prompts
     }
@@ -273,6 +285,7 @@ export class ProjectAnalyzer {
 ```
 
 **Implementation Steps:**
+
 1. Create file system analysis utilities
 2. Implement package.json parsing for Node.js projects
 3. Add support for Python, Java, and other project types
@@ -283,9 +296,11 @@ export class ProjectAnalyzer {
 ### Phase 3: Command Building and Execution
 
 #### 3.1 Prompt Templates (`src/constants/prompts.ts`)
+
 **Estimated Time:** 2-3 hours
 
 **Template Structure:**
+
 ```typescript
 export const PROMPT_TEMPLATES = {
     QUESTIONNAIRE: {
@@ -312,15 +327,16 @@ Project: {projectSummary}
 Feature: {featureContent}
 
 Create comprehensive questions covering all aspects of feature development.
-        `
+        `,
     },
     IMPLEMENTATION: {
         // Similar structure for implementation planning
-    }
+    },
 };
 ```
 
 **Implementation Steps:**
+
 1. Create template constants for different CLI agents
 2. Define placeholder replacement mechanism
 3. Add context-aware prompt customization
@@ -328,14 +344,16 @@ Create comprehensive questions covering all aspects of feature development.
 5. Implement prompt length optimization for CLI limits
 
 #### 3.2 Command Builder (`src/utils/commandBuilder.ts`)
+
 **Estimated Time:** 4-5 hours
 
 **Command Construction Logic:**
+
 ```typescript
 export class CommandBuilder {
     buildQuestionnaireCommand(
-        agent: CLIAgentInfo, 
-        filePath: string, 
+        agent: CLIAgentInfo,
+        filePath: string,
         context: ProjectContext
     ): string {
         // 1. Select appropriate prompt template
@@ -345,12 +363,12 @@ export class CommandBuilder {
         // 5. Escape special characters
         // 6. Validate command length
     }
-    
+
     private buildClaudeCodeCommand(filePath: string, prompt: string): string {
         // Format: claude code --file="path" --prompt="prompt"
         // Handle file path escaping and prompt formatting
     }
-    
+
     private buildGeminiCLICommand(filePath: string, prompt: string): string {
         // Format: gcloud ai generate --input="path" --prompt="prompt"
         // Handle Gemini CLI specific formatting
@@ -359,6 +377,7 @@ export class CommandBuilder {
 ```
 
 **Implementation Steps:**
+
 1. Create command template system
 2. Implement agent-specific formatting logic
 3. Add file path handling and escaping
@@ -367,16 +386,19 @@ export class CommandBuilder {
 6. Implement command testing utilities
 
 #### 3.3 CLI Execution Service (`src/services/cliExecutionService.ts`)
+
 **Estimated Time:** 3-4 hours
 
 **Execution Capabilities:**
-- Terminal-based command execution
-- Output streaming and capture
-- Error handling and recovery
-- Authentication failure detection
-- Progress indication for long-running commands
+
+-   Terminal-based command execution
+-   Output streaming and capture
+-   Error handling and recovery
+-   Authentication failure detection
+-   Progress indication for long-running commands
 
 **Implementation Steps:**
+
 1. Create VS Code terminal integration
 2. Implement command execution with output capture
 3. Add authentication error detection
@@ -387,15 +409,18 @@ export class CommandBuilder {
 ### Phase 4: UI Integration
 
 #### 4.1 Agent Selection UI (`src/views/agentSelectionView.ts`)
+
 **Estimated Time:** 3-4 hours
 
 **UI Components:**
-- Agent status indicator in tree view
-- Agent switching command palette
-- Authentication status display
-- Installation guide for missing agents
+
+-   Agent status indicator in tree view
+-   Agent switching command palette
+-   Authentication status display
+-   Installation guide for missing agents
 
 **Implementation Steps:**
+
 1. Add agent status to feature tree provider
 2. Create command palette entries for agent switching
 3. Implement status bar item for current agent
@@ -403,15 +428,18 @@ export class CommandBuilder {
 5. Create installation guide webview
 
 #### 4.2 Command Integration (`src/commands/cliCommands.ts`)
+
 **Estimated Time:** 2-3 hours
 
 **New Commands:**
-- `codespec.generateQuestions`: Generate questionnaire using selected agent
-- `codespec.generatePlan`: Generate implementation plan
-- `codespec.switchAgent`: Switch between available agents
-- `codespec.refreshAgents`: Refresh agent detection
+
+-   `codespec.generateQuestions`: Generate questionnaire using selected agent
+-   `codespec.generatePlan`: Generate implementation plan
+-   `codespec.switchAgent`: Switch between available agents
+-   `codespec.refreshAgents`: Refresh agent detection
 
 **Implementation Steps:**
+
 1. Create command implementations
 2. Add context menu integration
 3. Implement keyboard shortcuts
@@ -421,16 +449,19 @@ export class CommandBuilder {
 ### Phase 5: Testing and Quality Assurance
 
 #### 5.1 Unit Testing (`test/unit/`)
+
 **Estimated Time:** 6-8 hours
 
 **Test Coverage:**
-- CLI detection utilities
-- Command building logic
-- Project analysis functions
-- Agent management services
-- Mock mode functionality
+
+-   CLI detection utilities
+-   Command building logic
+-   Project analysis functions
+-   Agent management services
+-   Mock mode functionality
 
 **Implementation Steps:**
+
 1. Create test fixtures for different project types
 2. Implement CLI command mocking
 3. Add agent detection test cases
@@ -439,15 +470,18 @@ export class CommandBuilder {
 6. Add error handling test scenarios
 
 #### 5.2 Integration Testing (`test/integration/`)
+
 **Estimated Time:** 4-5 hours
 
 **Integration Scenarios:**
-- End-to-end CLI command execution
-- Agent switching workflows
-- Project analysis accuracy
-- Error recovery mechanisms
+
+-   End-to-end CLI command execution
+-   Agent switching workflows
+-   Project analysis accuracy
+-   Error recovery mechanisms
 
 **Implementation Steps:**
+
 1. Create test workspace environments
 2. Implement CLI tool mocking for CI/CD
 3. Add end-to-end workflow testing
@@ -457,25 +491,30 @@ export class CommandBuilder {
 ### Phase 6: Documentation and Deployment
 
 #### 6.1 Documentation Updates
+
 **Estimated Time:** 2-3 hours
 
 **Documentation Areas:**
-- README.md CLI integration section
-- Developer guide for CLI commands
-- Troubleshooting guide for CLI issues
-- Configuration documentation
+
+-   README.md CLI integration section
+-   Developer guide for CLI commands
+-   Troubleshooting guide for CLI issues
+-   Configuration documentation
 
 #### 6.2 Error Handling and User Guidance
+
 **Estimated Time:** 2-3 hours
 
 **Error Scenarios:**
-- CLI tool not installed
-- Authentication failures
-- Command execution errors
-- Network connectivity issues
-- Permission problems
+
+-   CLI tool not installed
+-   Authentication failures
+-   Command execution errors
+-   Network connectivity issues
+-   Permission problems
 
 **Implementation Steps:**
+
 1. Create user-friendly error messages
 2. Implement installation guidance
 3. Add troubleshooting tips
@@ -496,28 +535,31 @@ export class CommandBuilder {
 ### Success Criteria
 
 1. **Functional Requirements:**
-   - Automatic detection of Claude Code and Gemini CLI
-   - Seamless agent switching
-   - Context-aware command generation
-   - Successful CLI command execution
-   - Error handling and recovery
+
+    - Automatic detection of Claude Code and Gemini CLI
+    - Seamless agent switching
+    - Context-aware command generation
+    - Successful CLI command execution
+    - Error handling and recovery
 
 2. **Performance Requirements:**
-   - Agent detection completes within 5 seconds
-   - Command generation within 2 seconds
-   - Project analysis caching for improved performance
+
+    - Agent detection completes within 5 seconds
+    - Command generation within 2 seconds
+    - Project analysis caching for improved performance
 
 3. **User Experience Requirements:**
-   - Clear agent status indication
-   - Intuitive agent switching interface
-   - Helpful error messages and guidance
-   - Consistent behavior across different project types
+
+    - Clear agent status indication
+    - Intuitive agent switching interface
+    - Helpful error messages and guidance
+    - Consistent behavior across different project types
 
 4. **Quality Requirements:**
-   - 90%+ test coverage for CLI integration components
-   - All integration tests passing
-   - No breaking changes to existing functionality
-   - Comprehensive error handling
+    - 90%+ test coverage for CLI integration components
+    - All integration tests passing
+    - No breaking changes to existing functionality
+    - Comprehensive error handling
 
 ### Risk Mitigation
 

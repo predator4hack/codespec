@@ -31,6 +31,34 @@
         "command": "featureSpecs.refreshTree",
         "title": "Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "codespec.generateQuestions",
+        "title": "CodeSpec: Generate Questions"
+      },
+      {
+        "command": "codespec.generatePlan",
+        "title": "CodeSpec: Generate Implementation Plan"
+      },
+      {
+        "command": "codespec.switchAgent",
+        "title": "CodeSpec: Switch CLI Agent"
+      },
+      {
+        "command": "codespec.refreshAgents",
+        "title": "CodeSpec: Refresh CLI Agents"
+      },
+      {
+        "command": "codespec.showAgentStatus",
+        "title": "CodeSpec: Show Agent Status"
+      },
+      {
+        "command": "codespec.runInTerminal",
+        "title": "CodeSpec: Run in Terminal"
+      },
+      {
+        "command": "codespec.analyzeProjectContext",
+        "title": "CodeSpec: Analyze Project Context"
       }
     ],
     "menus": {
@@ -44,6 +72,46 @@
           "command": "featureSpecs.refreshTree",
           "when": "view == featureSpecs",
           "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "codespec.generateQuestions",
+          "when": "resourceExtname == .md",
+          "group": "codespec@1"
+        },
+        {
+          "command": "codespec.generatePlan",
+          "when": "resourceExtname == .md",
+          "group": "codespec@2"
+        },
+        {
+          "command": "codespec.runInTerminal",
+          "when": "resourceExtname == .md",
+          "group": "codespec@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "codespec.generateQuestions"
+        },
+        {
+          "command": "codespec.generatePlan"
+        },
+        {
+          "command": "codespec.switchAgent"
+        },
+        {
+          "command": "codespec.refreshAgents"
+        },
+        {
+          "command": "codespec.showAgentStatus"
+        },
+        {
+          "command": "codespec.runInTerminal"
+        },
+        {
+          "command": "codespec.analyzeProjectContext"
         }
       ]
     }

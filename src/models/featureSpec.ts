@@ -54,6 +54,7 @@ export interface ProjectContext {
     dependencies: string[];
     projectStructure: string[];
     cliContext?: CLIProjectContext;
+    analyzedFiles?: FileAnalysis[];
 }
 
 export interface CLIProjectContext {
@@ -84,4 +85,13 @@ export interface ConfigFile {
     name: string;
     path: string;
     content: string;
+}
+
+export interface FileAnalysis {
+    path: string;
+    content: string;
+    size: number;
+    language: string;
+    lastModified: Date;
+    summary?: string;
 }

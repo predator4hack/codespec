@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { CLIAgentInfo } from '../models/cliAgent';
-import { ProjectContext } from '../models/featureSpec';
+import { ProjectContext, FileAnalysis } from '../models/featureSpec';
 import { PromptBuilder, PromptContext } from '../constants/prompts';
 
 export class CommandBuilder {
@@ -13,9 +13,12 @@ export class CommandBuilder {
         featureContent: string,
         projectSummary: string
     ): string {
+        const importantFilesAnalysis = this.formatImportantFilesAnalysis(context.analyzedFiles);
+        
         const promptContext: PromptContext = {
             projectSummary,
-            featureContent
+            featureContent,
+            importantFilesAnalysis
         };
 
         // Truncate if necessary
@@ -34,9 +37,12 @@ export class CommandBuilder {
         featureContent: string,
         projectSummary: string
     ): string {
+        const importantFilesAnalysis = this.formatImportantFilesAnalysis(context.analyzedFiles);
+        
         const promptContext: PromptContext = {
             projectSummary,
-            featureContent
+            featureContent,
+            importantFilesAnalysis
         };
 
         const truncatedContext = PromptBuilder.truncateContext(promptContext);
@@ -55,10 +61,13 @@ export class CommandBuilder {
         projectSummary: string,
         implementationContext: string
     ): string {
+        const importantFilesAnalysis = this.formatImportantFilesAnalysis(context.analyzedFiles);
+        
         const promptContext: PromptContext = {
             projectSummary,
             featureContent,
-            implementationContext
+            implementationContext,
+            importantFilesAnalysis
         };
 
         const truncatedContext = PromptBuilder.truncateContext(promptContext);
@@ -76,11 +85,14 @@ export class CommandBuilder {
         fileContent: string,
         projectSummary: string
     ): string {
+        const importantFilesAnalysis = this.formatImportantFilesAnalysis(context.analyzedFiles);
+        
         const promptContext: PromptContext = {
             projectSummary,
             featureContent: '', // Not needed for file analysis
             fileContent,
-            filePath
+            filePath,
+            importantFilesAnalysis
         };
 
         const truncatedContext = PromptBuilder.truncateContext(promptContext);
@@ -283,5 +295,30 @@ export class CommandBuilder {
         }
         
         return Math.min(baseTime, 120); // Cap at 2 minutes
+    }
+
+    private formatImportantFilesAnalysis(analyzedFiles?: FileAnalysis[]): string {
+        if (!analyzedFiles || analyzedFiles.length === 0) {
+            return 'No important files specified for analysis.';
+        }
+
+        let analysis = 'Important Files Analysis:\n\n';
+        
+        for (const file of analyzedFiles) {
+            analysis += `## ${file.path}\n`;
+            analysis += `- **Language**: ${file.language}\n`;
+            analysis += `- **Size**: ${file.size} bytes\n`;
+            analysis += `- **Last Modified**: ${file.lastModified.toISOString()}\n`;
+            
+            if (file.summary) {
+                analysis += `- **Summary**: ${file.summary}\n`;
+            }
+            
+            analysis += '\n**Content:**\n```' + file.language + '\n';
+            analysis += file.content;
+            analysis += '\n```\n\n';
+        }
+
+        return analysis;
     }
 }

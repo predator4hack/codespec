@@ -8,6 +8,9 @@ Project Context:
 Current Feature File:
 {featureContent}
 
+Important Files Analysis:
+{importantFilesAnalysis}
+
 Generate 10-15 thoughtful questions that will help gather complete requirements for this feature. Focus on:
 - Functional requirements and core behavior
 - Non-functional requirements (performance, security, accessibility)
@@ -34,6 +37,9 @@ Project Information:
 Feature to Analyze:
 {featureContent}
 
+Important Files Analysis:
+{importantFilesAnalysis}
+
 Create 10-15 comprehensive questions that will help gather complete requirements for implementing this feature. Consider:
 - Core functionality and user workflows
 - Technical constraints and dependencies
@@ -54,6 +60,9 @@ Project Context:
 
 Feature Specification:
 {featureContent}
+
+Important Files Analysis:
+{importantFilesAnalysis}
 
 Create a detailed implementation plan that includes:
 
@@ -92,6 +101,9 @@ Project Details:
 
 Feature Requirements:
 {featureContent}
+
+Important Files Analysis:
+{importantFilesAnalysis}
 
 Develop a detailed plan covering:
 - Technical approach and architecture
@@ -182,6 +194,7 @@ export interface PromptContext {
     implementationContext?: string;
     fileContent?: string;
     filePath?: string;
+    importantFilesAnalysis?: string;
 }
 
 export class PromptBuilder {
@@ -194,6 +207,7 @@ export class PromptBuilder {
         prompt = prompt.replace('{implementationContext}', context.implementationContext || 'No implementation context provided');
         prompt = prompt.replace('{fileContent}', context.fileContent || 'No file content provided');
         prompt = prompt.replace('{filePath}', context.filePath || 'No file path provided');
+        prompt = prompt.replace('{importantFilesAnalysis}', context.importantFilesAnalysis || 'No important files specified');
         
         return prompt.trim();
     }
@@ -233,16 +247,20 @@ export class PromptBuilder {
         const truncated = { ...context };
         
         // Truncate long content to fit within limits
-        if (truncated.featureContent && truncated.featureContent.length > maxLength / 2) {
-            truncated.featureContent = truncated.featureContent.substring(0, maxLength / 2) + '\n\n[Content truncated for length...]';
+        if (truncated.featureContent && truncated.featureContent.length > maxLength / 3) {
+            truncated.featureContent = truncated.featureContent.substring(0, maxLength / 3) + '\n\n[Content truncated for length...]';
         }
         
-        if (truncated.projectSummary && truncated.projectSummary.length > maxLength / 4) {
-            truncated.projectSummary = truncated.projectSummary.substring(0, maxLength / 4) + '\n\n[Summary truncated for length...]';
+        if (truncated.projectSummary && truncated.projectSummary.length > maxLength / 6) {
+            truncated.projectSummary = truncated.projectSummary.substring(0, maxLength / 6) + '\n\n[Summary truncated for length...]';
         }
         
-        if (truncated.fileContent && truncated.fileContent.length > maxLength / 2) {
-            truncated.fileContent = truncated.fileContent.substring(0, maxLength / 2) + '\n\n[File content truncated for length...]';
+        if (truncated.fileContent && truncated.fileContent.length > maxLength / 3) {
+            truncated.fileContent = truncated.fileContent.substring(0, maxLength / 3) + '\n\n[File content truncated for length...]';
+        }
+        
+        if (truncated.importantFilesAnalysis && truncated.importantFilesAnalysis.length > maxLength / 3) {
+            truncated.importantFilesAnalysis = truncated.importantFilesAnalysis.substring(0, maxLength / 3) + '\n\n[Files analysis truncated for length...]';
         }
         
         return truncated;

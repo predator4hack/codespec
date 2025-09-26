@@ -88,6 +88,10 @@ function registerCommands(context: vscode.ExtensionContext) {
             'codespec.runInTerminal',
             (featureUri?: vscode.Uri) => cliCommands.runInTerminal(featureUri)
         ),
+        vscode.commands.registerCommand(
+            'codespec.analyzeProjectContext',
+            () => cliCommands.analyzeProjectContext()
+        ),
         
         // Agent status context menu commands
         vscode.commands.registerCommand(

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { CLIProjectContext, PackageInfo, FileStructure, ConfigFile } from '../models/featureSpec';
+import { CLIProjectContext, PackageInfo, FileStructure, ConfigFile, FileAnalysis } from '../models/featureSpec';
 
 export class ProjectAnalyzer {
     private cache: Map<string, CLIProjectContext> = new Map();
@@ -365,6 +365,152 @@ export class ProjectAnalyzer {
         ];
         
         return !excluded.includes(name) && !name.startsWith('.');
+    }
+
+    async analyzeImportantFiles(files: string[]): Promise<FileAnalysis[]> {
+        const analyses: FileAnalysis[] = [];
+        const maxFileSize = 10 * 1024; // 10KB limit per file
+        
+        for (const filePath of files) {
+            try {
+                // Validate file path and existence
+                if (!await this.fileExists(filePath)) {
+                    console.warn(`Important file not found: ${filePath}`);
+                    continue;
+                }
+                
+                // Get file stats
+                const stats = await fs.promises.stat(filePath);
+                
+                // Skip if file is too large
+                if (stats.size > maxFileSize) {
+                    console.warn(`Important file too large (${stats.size} bytes): ${filePath}`);
+                    analyses.push({
+                        path: filePath,
+                        content: `[File too large: ${stats.size} bytes - content not analyzed]`,
+                        size: stats.size,
+                        language: this.detectFileLanguage(filePath),
+                        lastModified: stats.mtime,
+                        summary: 'File too large for analysis'
+                    });
+                    continue;
+                }
+                
+                // Read file content
+                const content = await this.readTextFile(filePath);
+                
+                // Create file analysis
+                analyses.push({
+                    path: filePath,
+                    content: content,
+                    size: stats.size,
+                    language: this.detectFileLanguage(filePath),
+                    lastModified: stats.mtime,
+                    summary: this.generateFileSummary(content, filePath)
+                });
+                
+            } catch (error) {
+                console.error(`Failed to analyze important file ${filePath}:`, error);
+                // Add error entry to maintain consistency
+                analyses.push({
+                    path: filePath,
+                    content: `[Error reading file: ${error instanceof Error ? error.message : 'Unknown error'}]`,
+                    size: 0,
+                    language: this.detectFileLanguage(filePath),
+                    lastModified: new Date(),
+                    summary: 'Error reading file'
+                });
+            }
+        }
+        
+        return analyses;
+    }
+
+    private detectFileLanguage(filePath: string): string {
+        const extension = path.extname(filePath).toLowerCase();
+        
+        const languageMap: { [key: string]: string } = {
+            '.ts': 'typescript',
+            '.tsx': 'typescript',
+            '.js': 'javascript',
+            '.jsx': 'javascript',
+            '.py': 'python',
+            '.java': 'java',
+            '.cpp': 'cpp',
+            '.c': 'c',
+            '.cs': 'csharp',
+            '.php': 'php',
+            '.rb': 'ruby',
+            '.go': 'go',
+            '.rs': 'rust',
+            '.kt': 'kotlin',
+            '.swift': 'swift',
+            '.vue': 'vue',
+            '.svelte': 'svelte',
+            '.html': 'html',
+            '.css': 'css',
+            '.scss': 'scss',
+            '.sass': 'sass',
+            '.less': 'less',
+            '.json': 'json',
+            '.xml': 'xml',
+            '.yaml': 'yaml',
+            '.yml': 'yaml',
+            '.md': 'markdown',
+            '.txt': 'text',
+            '.sh': 'shell',
+            '.bat': 'batch',
+            '.ps1': 'powershell'
+        };
+        
+        return languageMap[extension] || 'text';
+    }
+
+    private generateFileSummary(content: string, filePath: string): string {
+        const lines = content.split('\n');
+        const totalLines = lines.length;
+        const fileName = path.basename(filePath);
+        
+        // Basic summary information
+        let summary = `${fileName} (${totalLines} lines)`;
+        
+        // Add language-specific insights
+        const language = this.detectFileLanguage(filePath);
+        
+        if (language === 'typescript' || language === 'javascript') {
+            const imports = lines.filter(line => line.trim().startsWith('import ')).length;
+            const exports = lines.filter(line => line.trim().startsWith('export ')).length;
+            const functions = lines.filter(line => 
+                line.includes('function ') || 
+                line.includes('=>') || 
+                line.match(/^\s*\w+\s*\(.*\)\s*{/)
+            ).length;
+            
+            if (imports > 0) summary += `, ${imports} imports`;
+            if (exports > 0) summary += `, ${exports} exports`;
+            if (functions > 0) summary += `, ~${functions} functions`;
+        } else if (language === 'python') {
+            const imports = lines.filter(line => 
+                line.trim().startsWith('import ') || 
+                line.trim().startsWith('from ')
+            ).length;
+            const functions = lines.filter(line => line.trim().startsWith('def ')).length;
+            const classes = lines.filter(line => line.trim().startsWith('class ')).length;
+            
+            if (imports > 0) summary += `, ${imports} imports`;
+            if (classes > 0) summary += `, ${classes} classes`;
+            if (functions > 0) summary += `, ${functions} functions`;
+        } else if (language === 'json') {
+            try {
+                const parsed = JSON.parse(content);
+                const keys = Object.keys(parsed).length;
+                summary += `, ${keys} top-level properties`;
+            } catch {
+                summary += ', invalid JSON';
+            }
+        }
+        
+        return summary;
     }
 
     public clearCache(): void {
